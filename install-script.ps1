@@ -1,37 +1,21 @@
 # install-script.ps1
 
-# Enable script execution and TLS 1.2
+# Zet script policies
 Set-ExecutionPolicy Bypass -Scope Process -Force
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 
-# Log output
-$logPath = "$env:SystemDrive\install-log.txt"
-Start-Transcript -Path $logPath -Append
-
-# Install Chocolatey if not already installed
+# Installeer Chocolatey (alleen als niet aanwezig)
 if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
-    Write-Output "Installing Chocolatey..."
     Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 }
 
-# Install required packages
-$packages = @("python", "git", "googlechrome", "chromedriver")
+# Installeer Python, Git en Google Chrome
+choco install -y python git googlechrome
 
-foreach ($pkg in $packages) {
-    Write-Output "Installing $pkg..."
-    choco install -y $pkg --ignore-checksums --no-progress
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "$pkg installation failed"
-    }
-}
-
-# Add Python scripts to PATH
+# Zorg dat pip scripts in PATH zitten
 $env:Path += ";C:\Python311\Scripts"
 
-# Install Python packages
-Write-Output "Installing Robot Framework & SeleniumLibrary..."
+# Installeer Robot Framework + Selenium
 pip install -U pip
 pip install robotframework
 pip install robotframework-seleniumlibrary
-
-Stop-Transcript
